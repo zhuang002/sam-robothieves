@@ -19,21 +19,23 @@ public class RoboThieves {
 
     static int[][] map=null;
     static int[][] status=null;
+    static ArrayList<Integer[]> cams =new ArrayList();
     static Integer[] start=new Integer[2];
+    static int n, m;
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         // TODO code application logic here
         readIn();
-        preprocess();
+        markStatusForAllCameras();
         process();
     }
     
     private static void readIn() {
         Scanner sc=new Scanner(System.in);
-        int n=sc.nextInt();
-        int m=sc.nextInt();
+        n=sc.nextInt();
+        m=sc.nextInt();
         map=new int[n][m];
         status=new int[n][m];
         for (int i=0;i<n;i++) {
@@ -43,20 +45,52 @@ public class RoboThieves {
                 map[i][j]=l.charAt(j);
                 if (map[i][j]=='W')
                     status[i][j]=-2;
+                else if(map[i][j]=='C'){
+                    Integer[] temp = new Integer[2];
+                    temp[0] = i;
+                    temp[1] = j;
+                }
                 else 
                     status[i][j]=-1;
             }
         }
         
     }
-
-    private static void preprocess() {
-        
-        markStatusForWalls(); // mark all the W points with -2
-        markStatusForAllCameras(); // mark all the . where camera can see with -2
-        
+    
+    private static void markStatusForAllCameras() {
+        for(Integer[] cam:cams){
+            int i = cam[0];
+            int j = cam[1];
+            if(map[i][j]=='c'){
+                map[i][j] = -2;
+                for(int u=i-1;u>=0;u--){
+                    if(map[u][j]!=-2)
+                        map[u][j] = -2;
+                    else
+                        break;
+                }
+                for(int d=i+1;d<n;d++){
+                    if(map[d][j]!=-2)
+                        map[d][j] = -2;
+                    else
+                        break;
+                }
+                for(int l=j-1;l>=0;l--){
+                    if(map[i][l]!=-2)
+                        map[i][l] = -2;
+                    else
+                        break;
+                }
+                for(int r=j+1;r<m;r++){
+                    if(map[i][r]!=-2)
+                        map[i][r] = -2;
+                    else
+                        break;
+                }
+            }
+        }
     }
-
+    
     private static void process()  {
         //typical BFS algorithm
         ArrayList<Integer[]> currentNodes=new ArrayList();
@@ -75,6 +109,25 @@ public class RoboThieves {
         }
     }
 
+    private static Integer[] move(Integer[] node, int i, int i0) {
+        Integer[] temp = new Integer[2];
+        temp[0] = node[0] + i;
+        temp[1] = node[1] + i0;
+        while(map[temp[0]][temp[1]]!=-1){
+            if(map[temp[0]][temp[1]]==-2)
+                return null;
+            if(map[temp[0]][temp[1]]=='L')
+                temp[1]--;
+            if(map[temp[0]][temp[1]]=='R')
+                temp[1]++;
+            if(map[temp[0]][temp[1]]=='U')
+                temp[0]++;
+            if(map[temp[0]][temp[1]]=='D')
+                temp[0]--;
+        }
+        return temp;
+    }
+    
     private static ArrayList<Integer[]> getNeighbour(Integer[] node) {
         ArrayList<Integer[]> rt=new ArrayList();
         Integer[] left=move(node,-1,0);
@@ -88,5 +141,5 @@ public class RoboThieves {
         if (down!=null) rt.add(down);
         return rt;
     }
-    
+
 }
