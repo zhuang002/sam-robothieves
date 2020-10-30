@@ -112,6 +112,10 @@ public class RoboThieves {
         //typical BFS algorithm
         ArrayList<Integer[]> currentNodes=new ArrayList();
         ArrayList<Integer[]> nextNodes=new ArrayList();
+        for(int i=0;i<cams.size();i++){
+            if(cams.get(i)[0]==start[0] || cams.get(i)[1]==start[1])
+                return;
+        }
         currentNodes.add(start);
         int step=0;
         
