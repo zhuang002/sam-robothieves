@@ -6,7 +6,6 @@
 package robothieves;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Scanner;
 
 /**
@@ -17,7 +16,7 @@ public class RoboThieves {
 
     
 
-    static int[][] map=null;
+    static char[][] map=null;
     static int[][] status=null;
     static ArrayList<Integer[]> cams =new ArrayList();
     static Integer[] start=new Integer[2];
@@ -30,16 +29,27 @@ public class RoboThieves {
         readIn();
         markStatusForAllCameras();
         process();
+        for (int i=0;i<n;i++) {
+            for (int j=0;j<m;j++) {
+                if (map[i][j]=='.') {
+                    if (status[i][j]>0)
+                        System.out.println(status[i][j]);
+                    else 
+                        System.out.println("-1");
+                }
+            }
+        }
     }
     
     private static void readIn() {
         Scanner sc=new Scanner(System.in);
         n=sc.nextInt();
         m=sc.nextInt();
-        map=new int[n][m];
+        sc.nextLine();
+        map=new char[n][m];
         status=new int[n][m];
         for (int i=0;i<n;i++) {
-            String l=sc.next();
+            String l=sc.nextLine();
             for (int j=0;j<m;j++)
             {
                 map[i][j]=l.charAt(j);
@@ -49,6 +59,13 @@ public class RoboThieves {
                     Integer[] temp = new Integer[2];
                     temp[0] = i;
                     temp[1] = j;
+                    cams.add(temp);
+                    status[i][j]=-2;
+                }
+                else if (map[i][j]=='S') {
+                    start[0]=i;
+                    start[1]=j;
+                    status[i][j]=0;
                 }
                 else 
                     status[i][j]=-1;
@@ -61,30 +78,30 @@ public class RoboThieves {
         for(Integer[] cam:cams){
             int i = cam[0];
             int j = cam[1];
-            if(map[i][j]=='c'){
-                map[i][j] = -2;
+            if(map[i][j]=='C'){
+                status[i][j] = -2;
                 for(int u=i-1;u>=0;u--){
-                    if(map[u][j]!=-2)
-                        map[u][j] = -2;
-                    else
+                    if(map[u][j]=='.')
+                        status[u][j] = -2;
+                    else if (map[u][j]=='W')
                         break;
                 }
                 for(int d=i+1;d<n;d++){
-                    if(map[d][j]!=-2)
-                        map[d][j] = -2;
-                    else
+                    if(map[d][j]=='.')
+                        status[d][j] = -2;
+                    else if (map[d][j]=='W')
                         break;
                 }
                 for(int l=j-1;l>=0;l--){
-                    if(map[i][l]!=-2)
-                        map[i][l] = -2;
-                    else
+                    if(map[i][l]=='.')
+                        status[i][l] = -2;
+                    else if (map[i][l]=='W')
                         break;
                 }
                 for(int r=j+1;r<m;r++){
-                    if(map[i][r]!=-2)
-                        map[i][r] = -2;
-                    else
+                    if(map[i][r]=='.')
+                        status[i][r] = -2;
+                    else if (map[i][r]=='W')
                         break;
                 }
             }
@@ -109,23 +126,52 @@ public class RoboThieves {
         }
     }
 
-    private static Integer[] move(Integer[] node, int i, int i0) {
-        Integer[] temp = new Integer[2];
-        temp[0] = node[0] + i;
-        temp[1] = node[1] + i0;
-        while(map[temp[0]][temp[1]]!=-1){
-            if(map[temp[0]][temp[1]]==-2)
-                return null;
-            if(map[temp[0]][temp[1]]=='L')
+    private static Integer[] move(Integer[] node, int i, int j) {
+        
+        int x = node[0] + j;
+        int y = node[1] + i;
+        if (x<0 || x>=n || y<0 || y>=m) return null;
+        if (status[x][y]==-2 || status[x][y]>=0) return null;
+        Integer[] rt=new Integer[2];
+        rt[0]=x;
+        rt[1]=y;
+        switch (map[x][y]) {
+            case 'L':
+                return move(rt,-1,0);
+            case 'R':
+                return move(rt,1,0);
+            case 'U':
+                return move(rt,0,-1);
+            case 'D':
+                return move(rt,0,1);
+            default:
+                break;
+        }
+        
+        return rt;
+        
+        /*while(true){
+            if(map[temp[0]][temp[1]]=='L') {
                 temp[1]--;
-            if(map[temp[0]][temp[1]]=='R')
+                if (temp[1]<0 || status[temp[0]][temp[1]==-2) return null;
+            }
+            else if(map[temp[0]][temp[1]]=='R')
                 temp[1]++;
-            if(map[temp[0]][temp[1]]=='U')
+                if (temp[1]>=n || status[temp[0]][temp[1]==-2) return null;
+            else if(map[temp[0]][temp[1]]=='U')
                 temp[0]++;
-            if(map[temp[0]][temp[1]]=='D')
+                if (temp[0]<0 || status[temp[0]][temp[1]]==-2) return null;
+            else if(map[temp[0]][temp[1]]=='D')
                 temp[0]--;
+                if (temp[0]>=n || status[temp[0]][temp[1]==-2) return null;
+            else if (status[temp[0]][temp[1]]==-1) {
+                return temp;
+            }
+            else return null;
+            
         }
         return temp;
+        */
     }
     
     private static ArrayList<Integer[]> getNeighbour(Integer[] node) {
